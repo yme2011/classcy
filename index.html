@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7f4ee" />
+  <title>Class 1 · 座位抽籤器</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand-mark">C1</div>
+        <div><p class="eyebrow">CLASS 01 / SEAT STUDIO</p><h1>座位抽籤器</h1></div>
+      </div>
+      <div class="top-actions">
+        <button class="button button-ghost" id="resetBtn" type="button">重新設定</button>
+        <button class="button button-primary" id="shuffleBtn" type="button">全部隨機 <span class="button-icon">↗</span></button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div><p class="eyebrow accent">ROOM 01 · LIVE BOARD</p><h2>讓每個座號，<em>找到自己的位置。</em></h2><p class="hero-copy">先排好教室輪廓，再把座號拖進座位。剩下的交給隨機。</p></div>
+        <div class="status-card"><span class="status-dot"></span><div><strong id="statusText">等待設定座位</strong><small id="statusSubtext">雙擊座位可淡化、雙擊座號可暫存</small></div></div>
+      </section>
+
+      <section class="workspace">
+        <aside class="sidebar">
+          <div class="panel-header"><div><p class="eyebrow">UNASSIGNED</p><h3>待安排座號</h3></div><span class="count-badge" id="unassignedCount">0</span></div>
+          <p class="hint">拖曳座號到右側座位。未選取的座號雙擊可暫存。</p>
+          <div class="data-actions"><button class="button button-ghost button-small" id="importExcelBtn" type="button">匯入 Excel</button><button class="button button-ghost button-small" id="openCyclBtn" type="button">開啟 .cycl</button><button class="button button-primary button-small" id="saveCyclBtn" type="button">保存當前檔案</button><input id="excelFileInput" type="file" accept=".xlsx,.xls,.csv" hidden /><input id="cyclFileInput" type="file" accept=".cycl,.json" hidden /></div><div class="number-pool" id="numberPool"><div class="empty-state">請先完成上方設定</div></div>
+          <div class="archive-section"><div class="archive-title"><span>暫存角落</span><span id="archivedCount">0</span></div><div class="archive-pool" id="archivePool"><div class="archive-empty">沒有暫存座號</div></div><p class="micro-hint">雙擊座號即可恢復</p></div>
+          <div class="legend"><div><span class="legend-swatch assigned"></span>已指定</div><div><span class="legend-swatch muted"></span>淡化座位</div><div><span class="legend-swatch gap"></span>可調整間隔</div></div>
+        </aside>
+
+        <section class="board-panel">
+          <div class="board-toolbar"><div><p class="eyebrow">SEATING MAP</p><h3 id="boardTitle">尚未建立座位表</h3></div><div class="board-tools"><button class="button button-ghost export-button" id="exportBtn" type="button">匯出 PNG</button><button class="icon-button" id="zoomOut" type="button" aria-label="縮小">−</button><span id="zoomValue">100%</span><button class="icon-button" id="zoomIn" type="button" aria-label="放大">＋</button></div></div>
+          <div class="board-wrap"><div class="board" id="board"><div class="board-placeholder"><span class="placeholder-glyph">＋</span><strong>設定教室尺寸後開始</strong><span>每排中間的短線都可以拖曳整排左右移動</span></div></div></div>
+          <div class="board-footer"><span><kbd>雙擊</kbd> 座位 → 淡化 / 恢復</span><span><kbd>拖曳</kbd> 中間間隔 → 調整左右距離</span><span id="assignedSummary">0 / 0 已安排</span></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="setupModal"><div class="modal modal-setup"><div class="modal-top"><span class="modal-kicker">STEP 01 / ROOM</span><button class="close-button" data-close="setupModal" type="button">×</button></div><h2>先把教室輪廓<br /><em>畫出來。</em></h2><p class="modal-copy">告訴我有幾排、每排幾個座位，再設定要抽的座號範圍。</p><div class="form-grid"><label>座位排數<input id="rowInput" type="number" min="1" max="12" value="5" /></label><label>每排座位數<input id="colInput" type="number" min="1" max="16" value="6" /></label><label>座號從<input id="startInput" type="number" min="0" max="999" value="1" /></label><label>座號到<input id="endInput" type="number" min="0" max="999" value="30" /></label></div><div class="form-error" id="setupError"></div><button class="button button-ghost button-wide" id="importFromSetupBtn" type="button">先從 Excel 匯入名單 <span>↓</span></button><button class="button button-primary button-wide" id="createBoardBtn" type="button">建立座位表 <span>→</span></button></div></div>
+
+  <div class="modal-backdrop hidden" id="importModal"><div class="modal modal-small"><div class="modal-top"><span class="modal-kicker">IMPORT / EXCEL</span><button class="close-button" data-close="importModal" type="button">×</button></div><h2>匯入名單</h2><p class="modal-copy">選擇 Excel 後，設定座號與姓名欄位。可填整欄，例如 <strong>A2:A</strong>、<strong>B2:B</strong>。</p><div class="form-grid"><label>座號欄位<input id="numberRangeInput" value="A2:A" /></label><label>姓名欄位<input id="nameRangeInput" value="B2:B" /></label></div><button class="button button-ghost button-wide" id="chooseExcelBtn" type="button">選擇 Excel 檔案 <span>＋</span></button><p class="file-name" id="excelFileName">尚未選擇檔案</p><div class="form-error" id="importError"></div><button class="button button-primary button-wide" id="confirmImportBtn" type="button">開始匯入 <span>→</span></button></div></div><div class="modal-backdrop hidden" id="archiveModal"><div class="modal modal-small"><div class="modal-top"><span class="modal-kicker">NUMBER ACTION</span><button class="close-button" data-close="archiveModal" type="button">×</button></div><h2>這個座號要怎麼處理？</h2><p class="modal-copy">座號 <strong id="archiveNumberLabel">—</strong> 尚未安排位置。</p><div class="choice-stack"><button class="choice-button" data-archive-action="other" type="button"><span><b>其他</b><small>先放到暫存角落</small></span><span>→</span></button><button class="choice-button" data-archive-action="left" type="button"><span><b>是的，已休學</b><small>從待安排清單隱藏</small></span><span>→</span></button><button class="choice-button choice-cancel" data-archive-action="cancel" type="button"><span><b>取消</b><small>不進行任何操作</small></span><span>×</span></button></div></div></div>
+
+  <div class="toast" id="toast"><span class="toast-dot"></span><span id="toastText"></span></div>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script><script src="./app.js"></script>
+</body>
+</html>
