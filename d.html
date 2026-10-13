@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>下載 cycdata.cycl</title>
+  <style>
+    :root{font-family:system-ui,"Microsoft JhengHei",sans-serif;color:#24313b;background:#f7f4ee}
+    body{min-height:100vh;margin:0;display:grid;place-items:center}
+    main{width:min(420px,calc(100% - 40px));padding:32px;background:#fff;border:1px solid #d9ddd9;border-radius:18px;box-shadow:0 18px 50px #24313b18;text-align:center}
+    h1{font-size:24px;margin:0 0 10px}p{font-size:13px;color:#87919a;line-height:1.7;margin:0 0 22px}
+    a{display:inline-block;background:#e6633c;color:#fff;text-decoration:none;border-radius:9px;padding:12px 18px;font-weight:800;font-size:13px}
+    #status{font-size:12px;color:#87919a;margin-top:16px;min-height:18px}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>cycdata.cycl</h1>
+    <p id="message">正在準備下載檔案……</p>
+    <a id="downloadLink" href="https://raw.githubusercontent.com/yme2011/class/main/cycdata.cycl" download="cycdata.cycl">手動下載 cycdata.cycl</a>
+    <div id="status"></div>
+  </main>
+  <script>
+    const rawUrl='https://raw.githubusercontent.com/yme2011/class/main/cycdata.cycl';
+    const message=document.querySelector('#message');
+    const status=document.querySelector('#status');
+    async function downloadFile(){
+      try{
+        const response=await fetch(rawUrl,{cache:'no-store'});
+        if(!response.ok)throw new Error('HTTP '+response.status);
+        const blob=await response.blob();
+        const url=URL.createObjectURL(blob);
+        const link=document.createElement('a');
+        link.href=url;
+        link.download='cycdata.cycl';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),2000);
+        message.textContent='下載已開始';
+        status.textContent='如果瀏覽器阻擋自動下載，請按上方手動下載按鈕。';
+      }catch(error){
+        message.textContent='自動下載未完成';
+        status.textContent='請按上方手動下載按鈕，或確認網路連線。';
+        console.error(error);
+      }
+    }
+    downloadFile();
+  </script>
+</body>
+</html>
